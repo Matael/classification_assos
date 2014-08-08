@@ -40,9 +40,10 @@ def read_json(in_file):
     return data
 
 
-def create_tree(json_data):
+def create_tree(json_data, top_level_limit=3):
 
     root_children = {}
+    top_level_count = 0
 
     sa1_list = []
     # loop over every line
@@ -58,8 +59,12 @@ def create_tree(json_data):
             continue
 
         if r_sa1 not in sa1_list:
-            root_children[r_sa1] = {'name': r_sa1, 'children': [], 'list_children': {}}
-            sa1_list.append(r_sa1)
+            if top_level_count < top_level_limit:
+                root_children[r_sa1] = {'name': r_sa1, 'children': [], 'list_children': {}}
+                sa1_list.append(r_sa1)
+                top_level_count += 1
+
+            else: continue
 
         if not r_sa2:
 
@@ -84,6 +89,17 @@ def create_tree(json_data):
 
     return root_children
 
+
+def reparse_all(tree):
+    children = []
+    for c in tree['children']:
+        newc = {'name': c['name']}
+        if c.get('children'): newc['children'] = reparse_all(c)
+        if not c['name'] in [_['name'] for _ in children]:
+            children.append(newc)
+    return children
+
+
 def unnest(nested_tree):
 
     for i in nested_tree['list_children'].values():
@@ -98,12 +114,16 @@ def unnest(nested_tree):
 
 def output_json(nested_tree):
 
-
     valid_data = unnest({
         'name': 'root',
         'children': [],
         'list_children': nested_tree
     })
+
+    valid_data = {
+        'name': 'root',
+        'children': reparse_all(valid_data)
+    }
 
     with open('out.json', 'w') as f:
         f.write(json.dumps(valid_data))
@@ -111,7 +131,7 @@ def output_json(nested_tree):
 def main():
 
     json_data = read_json(sys.argv[1])
-    nested_tree = create_tree(json_data)
+    nested_tree = create_tree(json_data, 78)
     output_json(nested_tree)
 
 if __name__=='__main__': main()
