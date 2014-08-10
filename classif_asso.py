@@ -95,7 +95,7 @@ def reparse_all(tree):
     children = []
     for c in tree['children']:
         newc = {'name': c['name']}
-        if c.get('children'): newc['children'] = reparse_all(c)
+        if c.get('children'): newc['_children'] = reparse_all(c)
         if not c['name'] in [_['name'] for _ in children]:
             children.append(newc)
     return children
@@ -121,9 +121,10 @@ def output_json(nested_tree):
         'list_children': nested_tree
     })
 
+    # _children is for a closed tree (by default)
     valid_data = {
-        'name': 'root',
-        'children': reparse_all(valid_data)
+        'name': 'Associations Parisiennes',
+        '_children': reparse_all(valid_data)
     }
 
     with codecs.open('out.json', encoding='iso-8859-15', mode='w') as f:
