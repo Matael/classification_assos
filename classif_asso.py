@@ -31,10 +31,11 @@ import sys
 import os
 
 import json
+import codecs
 
 def read_json(in_file):
 
-    with open(in_file) as f:
+    with codecs.open(in_file, encoding="iso-8859-15") as f:
         data = json.load(f)
 
     return data
@@ -125,7 +126,7 @@ def output_json(nested_tree):
         'children': reparse_all(valid_data)
     }
 
-    with open('out.json', 'w') as f:
+    with codecs.open('out.json', encoding='iso-8859-15', mode='w') as f:
         f.write(json.dumps(valid_data))
 
 def main():
